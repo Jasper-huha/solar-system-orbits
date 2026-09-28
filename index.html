@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>太陽系九大行星運行 · 俯瞰圖</title>
+<style>
+  :root{
+    --bg:#01030a; --panel:rgba(16,22,40,0.82); --line:rgba(255,255,255,0.12);
+    --txt:#e8ecff; --sub:#9aa6c8; --accent:#6ea8ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--txt)}
+  #sky{position:fixed;inset:0;display:block;cursor:grab}
+  #sky:active{cursor:grabbing}
+
+  /* 控制面板 */
+  #panel{position:fixed;top:14px;left:14px;width:268px;background:var(--panel);
+    border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);
+    box-shadow:0 8px 30px rgba(0,0,0,.45);user-select:none;z-index:10}
+  #panelHead{display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px;cursor:pointer}
+  #panelHead h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.5px}
+  #panelHead .tri{color:var(--sub);font-size:12px;transition:transform .2s}
+  #panel.collapsed .tri{transform:rotate(-90deg)}
+  #panelBody{padding:0 14px 14px;display:flex;flex-direction:column;gap:13px}
+  #panel.collapsed #panelBody{display:none}
+
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row > label{font-size:12px;color:var(--sub);display:flex;justify-content:space-between}
+  select,button{font-family:inherit;color:var(--txt)}
+  select{width:100%;padding:8px 10px;background:#0d1430;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;cursor:pointer}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  button{flex:1;min-width:60px;padding:8px 6px;background:#16204a;border:1px solid var(--line);
+    border-radius:9px;font-size:13px;cursor:pointer;transition:background .15s}
+  button:hover{background:#22306a}
+  input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+  .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);cursor:pointer}
+  .chk input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+  .divider{height:1px;background:var(--line);margin:2px 0}
+
+  /* 讀數 */
+  .stats{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px}
+  .stats b{color:var(--sub);font-weight:500}
+  .stats span{text-align:right;font-variant-numeric:tabular-nums}
+
+  /* 圖例 */
+  #legend{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:11.5px;color:var(--sub)}
+  #legend .lg{display:flex;align-items:center;gap:4px}
+  #legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+  .hint{font-size:11px;color:var(--sub);line-height:1.6}
+  .hint b{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+
+<div id="panel">
+  <div id="panelHead">
+    <h1>🪐 九大行星運行</h1>
+    <span class="tri">▾</span>
+  </div>
+  <div id="panelBody">
+
+    <div class="row">
+      <label>觀察中心點</label>
+      <select id="selCenter"></select>
+    </div>
+
+    <div class="btns">
+      <button id="btnPlay">⏸ 暫停</button>
+      <button id="btnRev">⏩ 正向</button>
+    </div>
+
+    <div class="row">
+      <label>運行速度</label>
+      <input id="rngSpeed" type="range" min="0" max="1000" value="500">
+    </div>
+
+    <div class="row">
+      <label>軌跡長度 <span id="lblTrail">8 年</span></label>
+      <input id="rngTrail" type="range" min="1" max="40" value="8">
+    </div>
+
+    <label class="chk"><input id="chkPreview" type="checkbox" checked> 顯示完整軌跡（含預測）</label>
+    <label class="chk"><input id="chkLabels" type="checkbox" checked> 顯示名稱</label>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <label>視野縮放</label>
+      <div class="btns">
+        <button id="btnInner">內行星</button>
+        <button id="btnMid">中段</button>
+        <button id="btnAll">全部</button>
+      </div>
+    </div>
+    <div class="btns">
+      <button id="btnReset">↺ 重置</button>
+      <button id="btnClear">清除軌跡</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stats">
+      <b>模擬日期</b><span id="oDate">—</span>
+      <b>中心</b><span id="oCenter">—</span>
+      <b>速度</b><span id="oSpeed">—</span>
+    </div>
+
+    <div id="legend"></div>
+
+    <div class="divider"></div>
+    <div class="hint">
+      真實橢圓軌道（克卜勒，太陽在焦點）<br>
+      滾輪縮放 · 拖曳平移 · <b>點任一星體</b>即設為中心<br>
+      切到 <b>地球</b> 為中心，可看到各行星的逆行迴圈軌跡（地心說視角）。
+    </div>
+
+  </div>
+</div>
+
+<script defer src="app.js"></script>
+</body>
+</html>
